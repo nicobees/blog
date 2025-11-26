@@ -1,12 +1,12 @@
+import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { Octokit } from '@octokit/rest';
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import matter from 'gray-matter';
-import hljs from 'highlight.js';
 import { marked } from 'marked';
-import { markedHighlight } from 'marked-highlight';
 import { minimatch } from 'minimatch';
+import { customRenderer } from './customRenderer';
+import { escapeHtml, log } from './utils';
 
 const __dirname = import.meta.dirname;
 const __filename = import.meta.filename;
@@ -50,10 +50,11 @@ interface ContentSource {
 // Constants
 // ============================================================================
 
-const CONTENT_REGISTRY = path.resolve(__dirname, 'content-registry.json');
-const OUTPUT_DIR = path.resolve(__dirname, 'public/pages');
-const INDEX_OUTPUT = path.resolve(__dirname, 'src/data/blog-index.json');
-const STYLES_PATH = path.resolve(__dirname, 'src/styles/blog-post.css');
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+const CONTENT_REGISTRY = path.resolve(PROJECT_ROOT, 'content-registry.json');
+const OUTPUT_DIR = path.resolve(PROJECT_ROOT, 'public/pages');
+const INDEX_OUTPUT = path.resolve(PROJECT_ROOT, 'src/data/blog-index.json');
+const STYLES_PATH = path.resolve(PROJECT_ROOT, 'src/styles/blog-post.css');
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 // ============================================================================
@@ -70,20 +71,6 @@ const fetchStats = {
   success: 0,
   total: 0,
 };
-
-// ============================================================================
-// Logging Utilities
-// ============================================================================
-
-function log(message: string, type: 'info' | 'success' | 'warn' | 'error' = 'info') {
-  const prefixes = {
-    error: '❌',
-    info: '📝',
-    success: '✅',
-    warn: '⚠️',
-  };
-  console.log(`${prefixes[type]} ${message}`);
-}
 
 // ============================================================================
 // Tailwind CSS Processing
@@ -115,46 +102,35 @@ async function generateTailwindCSS(htmlContent: string): Promise<string> {
 // Markdown Rendering
 // ============================================================================
 
-// // Configure marked to use highlight.js
-// marked.setOptions({
-//   async: false,
-//   breaks: true,
-//   gfm: true,
-//   highlight: (code: string, lang: string) => {
-//     if (lang && hljs.getLanguage(lang)) {
-//       try {
-//         return hljs.highlight(code, { ignoreIllegals: true, language: lang }).html;
-//       } catch (error) {
-//         log(`Error highlighting ${lang}: ${error}`, 'warn');
-//       }
-//     }
-//     // Fallback to no highlighting
-//     return hljs.highlight(code, { language: 'plaintext' }).html;
-//   },
-//   pedantic: false,
-// });
-
 // Configure marked to use highlight.js via the plugin
-marked.use(
-  markedHighlight({
-    highlight(code, lang) {
-      if (lang && hljs.getLanguage(lang)) {
-        try {
-          // Note: In modern highlight.js, the property is .value, not .html
-          return hljs.highlight(code, { ignoreIllegals: true, language: lang }).value;
-        } catch (error) {
-          log(`Error highlighting ${lang}: ${error}`, 'warn');
-        }
-      }
-      // Fallback to no highlighting
-      return hljs.highlight(code, { language: 'plaintext' }).value;
-    },
-    langPrefix: 'hljs language-',
-  }),
-);
+// marked.use(
+//   markedHighlight({
+//     highlight(code, lang) {
+//       if (lang && hljs.getLanguage(lang)) {
+//         try {
+//           // Note: In modern highlight.js, the property is .value, not .html
+//           return hljs.highlight(code, { ignoreIllegals: true, language: lang }).value;
+//         } catch (error) {
+//           log(`Error highlighting ${lang}: ${error}`, 'warn');
+//         }
+//       }
+//       // Fallback to no highlighting
+//       return hljs.highlight(code, { language: 'plaintext' }).value;
+//     },
+//     langPrefix: 'hljs language-',
+//   }),
+// );
 
 // Set other options separately
 marked.use({
+  breaks: true,
+  gfm: true,
+  pedantic: false,
+  renderer: customRenderer,
+});
+
+marked.setOptions({
+  async: false,
   breaks: true,
   gfm: true,
   pedantic: false,
@@ -170,22 +146,13 @@ async function renderMarkdownToHtml(markdown: string): Promise<string> {
   }
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 // ============================================================================
 // Local File Scanning
 // ============================================================================
 
 async function scanLocalMarkdown(sourcePath: string): Promise<BlogPost[]> {
   const posts: BlogPost[] = [];
-  const fullPath = path.resolve(__dirname, sourcePath);
+  const fullPath = path.resolve(PROJECT_ROOT, sourcePath);
 
   if (!fs.existsSync(fullPath)) {
     log(`Local path not found: ${fullPath}`, 'warn');
@@ -424,7 +391,7 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
     <meta name="author" content="${escapeHtml(post.metadata.author || 'Unknown')}" />
     ${post.metadata.tags ? `<meta name="keywords" content="${escapeHtml(post.metadata.tags.join(', '))}" />` : ''}
     <style>
-      ${styles}
+    ${styles}
     </style>
 </head>
 <body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50">

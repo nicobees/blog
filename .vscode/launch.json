@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "console": "integratedTerminal",
+      "name": "Debug Build Pages",
+      "program": "${workspaceFolder}/render/build-pages.ts",
+      "request": "launch",
+      "runtimeArgs": ["--import", "tsx/esm"],
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    }
+  ],
+  "version": "0.2.0"
+}
