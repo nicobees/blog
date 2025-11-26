@@ -1,0 +1,16 @@
+<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d2ff" />
+      <stop offset="100%" stop-color="#3a7bd5" />
+    </linearGradient>
+  </defs>
+  <rect width="500" height="500" rx="100" fill="#f8f9fa"/>
+  
+  <!-- N -->
+  <path d="M120 350 V150 L220 350 V150" stroke="url(#mainGrad)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- A -->
+  <path d="M280 350 L330 150 L380 350" stroke="url(#mainGrad)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <line x1="305" y1="280" x2="355" y2="280" stroke="url(#mainGrad)" stroke-width="30" stroke-linecap="round"/>
+</svg>

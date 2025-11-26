@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {
+      "path": "content/posts",
+      "pattern": "*.md",
+      "type": "local"
+    }
+  ]
+}

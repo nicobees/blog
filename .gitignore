@@ -1,0 +1,15 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+.vite/
+
+node_modules/
+dist
+/public/pages
+*.local
+
+.env
+
+/previous

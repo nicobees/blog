@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2180a5;
+  --color-primary-hover: #1d6a85;
+}
+
+/* Custom component classes for blog posts */
+@layer components {
+  .prose-h1 {
+    @apply text-4xl font-bold mb-6 mt-0;
+  }
+
+  .prose-h2 {
+    @apply text-2xl font-bold mb-4 mt-8 border-b-2 border-gray-300 pb-2 dark:border-gray-600;
+  }
+
+  .prose-h3 {
+    @apply text-xl font-semibold mb-3 mt-6;
+  }
+
+  .prose-p {
+    @apply mb-4 leading-7;
+  }
+
+  .prose-a {
+    @apply text-primary hover:text-primary-hover underline transition-colors;
+  }
+
+  .prose-code {
+    @apply bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-1.5 py-0.5 rounded text-sm;
+  }
+
+  .prose-pre {
+    @apply bg-gray-100 dark:bg-gray-900 rounded-lg p-6 overflow-x-auto mb-6 border border-gray-300 dark:border-gray-700;
+  }
+
+  .prose-pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .prose-ul {
+    @apply list-disc list-inside ml-4 mb-4 space-y-2;
+  }
+
+  .prose-ol {
+    @apply list-decimal list-inside ml-4 mb-4 space-y-2;
+  }
+
+  .prose-blockquote {
+    @apply border-l-4 border-primary pl-6 my-6 text-gray-600 dark:text-gray-400 italic;
+  }
+
+  .prose-table {
+    @apply w-full border-collapse mb-6 border border-gray-300 dark:border-gray-700;
+  }
+
+  .prose-th {
+    @apply bg-gray-100 dark:bg-gray-800 px-4 py-2 text-left font-semibold border-b border-gray-300 dark:border-gray-700;
+  }
+
+  .prose-td {
+    @apply px-4 py-2 border-b border-gray-300 dark:border-gray-700;
+  }
+
+  .prose-img {
+    @apply max-w-full h-auto rounded-lg my-6;
+  }
+}
+
+/* Highlight.js Theme */
+.hljs {
+  @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type,
+.hljs-variable.language_ {
+  @apply text-red-600 dark:text-red-400;
+}
+
+.hljs-title,
+.hljs-function .hljs-title,
+.hljs-class .hljs-title {
+  @apply text-purple-600 dark:text-purple-400;
+}
+
+.hljs-string,
+.hljs-literal,
+.hljs-attr {
+  @apply text-green-600 dark:text-green-400;
+}
+
+.hljs-number {
+  @apply text-orange-600 dark:text-orange-400;
+}
+
+.hljs-comment {
+  @apply text-gray-500 dark:text-gray-500 italic;
+}
