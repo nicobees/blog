@@ -81,17 +81,20 @@ const fetchStats = {
 
 async function generateTailwindCSS(htmlContent: string): Promise<string> {
   try {
-    // Create a temporary file with the HTML content for Tailwind to scan
-    const tempFile = path.join(__dirname, '.temp-tailwind.html');
-    fs.writeFileSync(tempFile, htmlContent, 'utf-8');
+    const tempHtmlFile = path.join(__dirname, '.temp-tailwind.html');
+    const tempCssFile = path.join(__dirname, '.temp-tailwind.css');
 
-    // Generate CSS using Tailwind CLI
-    const css = execSync(`npx tailwindcss -i ./src/styles/tailwind-input.css -o /dev/stdout --content ${tempFile}`, {
+    fs.writeFileSync(tempHtmlFile, htmlContent, 'utf-8');
+
+    // Write CSS to a file instead of /dev/stdout
+    execSync(`npx tailwindcss -i ./src/styles/tailwind-input.css -o ${tempCssFile} --content ${tempHtmlFile}`, {
       encoding: 'utf-8',
     });
 
-    // Clean up temp file
-    fs.removeSync(tempFile);
+    const css = fs.readFileSync(tempCssFile, 'utf-8');
+
+    fs.removeSync(tempHtmlFile);
+    fs.removeSync(tempCssFile);
 
     return css;
   } catch (error) {
