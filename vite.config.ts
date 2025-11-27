@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import svgr from 'vite-plugin-svgr';
 
 export default defineConfig({
   base: '/blog/',
@@ -31,7 +32,13 @@ export default defineConfig({
     },
     target: 'esnext',
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    svgr({
+      svgrOptions: { icon: true },
+    }),
+  ],
 
   server: {
     open: false,

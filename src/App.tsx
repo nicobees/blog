@@ -21,10 +21,12 @@ function App() {
   }, []);
 
   const Content = (
-    <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-12 sm:py-10">
+    <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-12 sm:py-10">
       <header className="mb-12">
-        <h1 className="text-4xl font-bold mb-4">My Blog</h1>
-        <p className="text-lg text-(--color-text-secondary)">Thoughts on React, TypeScript, and web development</p>
+        <h1 className="text-4xl font-bold mb-4">Nicobees Blog</h1>
+        <p className="text-lg text-(--color-text-secondary)">
+          Articles about web development, React, TypeScript, and me!
+        </p>
       </header>
 
       <section className="grid gap-8 md:grid-cols-2">

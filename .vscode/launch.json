@@ -2,11 +2,11 @@
   "configurations": [
     {
       "console": "integratedTerminal",
-      "name": "Debug Build Pages",
-      "program": "${workspaceFolder}/render/build-pages.ts",
+      "cwd": "${workspaceFolder}",
+      "name": "Debug build-gh-pages-test",
       "request": "launch",
-      "runtimeArgs": ["--import", "tsx/esm"],
-      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["run", "build-gh-pages-test"],
+      "runtimeExecutable": "npm",
       "type": "node"
     }
   ],

@@ -7,5 +7,5 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true
   },
-  "include": ["vite.config.ts", "render/*.ts", "src/components/**/*.tsx"]
+  "include": ["vite.config.ts", "src/vite-env.d.ts", "render/*.ts", "src/components/**/*.tsx"]
 }
