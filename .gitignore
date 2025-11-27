@@ -31,5 +31,5 @@ dist
 .vite/
 /previous
 
-!src/data/blog-index.json
+src/data/blog-index.json
 
