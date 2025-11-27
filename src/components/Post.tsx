@@ -33,7 +33,7 @@ export default function Post({ post }: BlogLayoutProps) {
   }, [post.date]);
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-10">
       <article className="bg-(--color-surface) border border-(--color-border) rounded-lg p-8 sm:p-12 shadow-sm">
         <header className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-(--color-text)">{post.title}</h1>
