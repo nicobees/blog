@@ -23,6 +23,7 @@ node_modules/
 dist
 /public/pages
 *.local
+*.tsbuildinfo
 
 .env
 .env.local
@@ -30,4 +31,3 @@ dist
 
 .vite/
 /previous
-

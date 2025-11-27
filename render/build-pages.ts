@@ -12,6 +12,8 @@ import Post, { MARKDOWN_CONTENT_PLACEHOLDER } from '../src/components/Post';
 import { customRenderer } from './customRenderer';
 import { escapeHtml, log } from './utils';
 
+const SHOW_ALL_POSTS = process.env.SHOW_ALL_POSTS === 'true';
+
 const __dirname = import.meta.dirname;
 const __filename = import.meta.filename;
 
@@ -24,6 +26,8 @@ interface BlogPostMetadata {
   tags: string[];
 }
 
+type BlogPostStatus = 'archived' | 'draft' | 'published';
+
 interface BlogPost {
   id: string;
   slug: string;
@@ -34,6 +38,7 @@ interface BlogPost {
   metadata: BlogPostMetadata;
   source: 'local' | 'github';
   sourceRepo?: string;
+  status: BlogPostStatus;
 }
 
 interface BlogIndex {
@@ -188,6 +193,7 @@ async function scanLocalMarkdown(sourcePath: string): Promise<BlogPost[]> {
         metadata: data as BlogPostMetadata, // TODO: validate metadata at runtime
         slug,
         source: 'local',
+        status: data.status || 'draft',
         title: data.title || file,
       });
 
@@ -314,6 +320,7 @@ async function scanGitHubMarkdown(source: ContentSource): Promise<BlogPost[]> {
           slug: `${owner}-${slug}`,
           source: 'github',
           sourceRepo: `${owner}/${repo}`,
+          status: data.status || 'draft',
           title: data.title || filePath,
         });
 
@@ -445,7 +452,6 @@ async function generateBlogIndex(posts: BlogPost[]): Promise<void> {
 // ============================================================================
 
 async function build(): Promise<void> {
-  console.info('inside build');
   try {
     log('Starting blog build process...\n');
 
@@ -462,11 +468,15 @@ async function build(): Promise<void> {
 
     log(`\nTotal posts found: ${uniquePosts.length}\n`);
 
-    for (const post of uniquePosts) {
+    const filteredPosts = SHOW_ALL_POSTS ? uniquePosts : uniquePosts.filter((post) => post.status === 'published');
+
+    log(`\n Total posts in published status to be rendered: ${filteredPosts.length}\n`);
+
+    for (const post of filteredPosts) {
       await generatePostHTML(post);
     }
 
-    await generateBlogIndex(uniquePosts);
+    await generateBlogIndex(filteredPosts);
 
     log(`\n🎉 Build complete!`);
     log(`   Success: ${fetchStats.success}/${fetchStats.total}`, 'success');
@@ -480,7 +490,6 @@ async function build(): Promise<void> {
 }
 
 if (process.argv[1] === __filename) {
-  console.info('running build');
   build();
 }
 

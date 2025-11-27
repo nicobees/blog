@@ -5,6 +5,7 @@ date: "2025-11-26"
 author: "Your Name"
 tags: ["static-site-generation", "react", "vite", "github-pages", "markdown", "ssg", "web-development"]
 keywords: "SSG, static site generation, GitHub Pages, React, Vite, markdown blog, static site builder"
+status: "published"
 ---
 
 ## TL;DR
