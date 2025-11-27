@@ -9,6 +9,7 @@
     "dev": "vite",
     "render-pages": "npx tsx render/build-pages.ts",
     "build": "npm run render-pages && vite build",
+    "build-gh-pages-test": "source .env.production && npm run type-check && npm run render-pages && vite build --base=$VITE_BASE_PATH",
     "build-gh-pages": "npm run type-check && npm run render-pages && vite build --base=$VITE_BASE_PATH",
     "preview": "vite preview",
     "lint": "biome check .",
