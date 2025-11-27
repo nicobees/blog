@@ -30,7 +30,7 @@ export const customRenderer = {
       code = hljs.highlight(code, { language: 'plaintext' }).value;
     }
 
-    return `<pre class="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 overflow-x-auto mb-6 border border-gray-300 dark:border-gray-700"><code class="language-${lang}">${code}</code></pre>`;
+    return `<pre class="bg-gray-100 dark:bg-gray-900 rounded-lg p-6 overflow-x-auto mb-6 border border-gray-300 dark:border-gray-700"><code class="hljs language-${lang}">${code}</code></pre>`;
   },
 
   // Inline code

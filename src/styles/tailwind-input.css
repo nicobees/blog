@@ -69,33 +69,83 @@
 }
 
 /* Highlight.js Theme */
-.hljs {
-  @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
-}
+@layer components {
+  .hljs {
+    @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+  }
 
-.hljs-keyword,
-.hljs-selector-tag,
-.hljs-type,
-.hljs-variable.language_ {
-  @apply text-red-600 dark:text-red-400;
-}
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-type,
+  .hljs-variable.language_ {
+    @apply text-red-600 dark:text-red-400;
+  }
 
-.hljs-title,
-.hljs-function .hljs-title,
-.hljs-class .hljs-title {
-  @apply text-purple-600 dark:text-purple-400;
-}
+  .hljs-title,
+  .hljs-function .hljs-title,
+  .hljs-class .hljs-title {
+    @apply text-purple-600 dark:text-purple-400;
+  }
 
-.hljs-string,
-.hljs-literal,
-.hljs-attr {
-  @apply text-green-600 dark:text-green-400;
-}
+  .hljs-string,
+  .hljs-literal,
+  .hljs-attr {
+    @apply text-green-600 dark:text-green-400;
+  }
 
-.hljs-number {
-  @apply text-orange-600 dark:text-orange-400;
-}
+  .hljs-number {
+    @apply text-orange-600 dark:text-orange-400;
+  }
 
-.hljs-comment {
-  @apply text-gray-500 dark:text-gray-500 italic;
+  .hljs-comment {
+    @apply text-gray-500 dark:text-gray-500 italic;
+  }
+
+  .hljs-doctag,
+  .hljs-meta .hljs-keyword,
+  .hljs-template-tag,
+  .hljs-template-variable,
+  .hljs-attribute,
+  .hljs-meta,
+  .hljs-operator,
+  .hljs-selector-attr,
+  .hljs-selector-class,
+  .hljs-selector-id,
+  .hljs-variable {
+    @apply text-blue-700 dark:text-blue-400;
+  }
+
+  .hljs-bullet,
+  .hljs-symbol {
+    @apply text-blue-900 dark:text-emerald-300;
+  }
+
+  .hljs-section,
+  .hljs-link,
+  .hljs-punctuation,
+  .hljs-quote {
+    @apply text-gray-900 dark:text-slate-200;
+  }
+
+  .hljs-code {
+    @apply text-orange-500 dark:text-orange-400;
+  }
+
+  .hljs-strong {
+    @apply font-semibold;
+  }
+
+  .hljs-addition {
+    @apply bg-orange-500 text-white dark:bg-emerald-900 dark:text-emerald-100;
+  }
+
+  .hljs-deletion {
+    @apply bg-red-700 text-red-50;
+  }
+
+  code.hljs.language-yaml,
+  code.hljs.language-typescript,
+  code.hljs.language-bash {
+    display: inline-block;
+  }
 }

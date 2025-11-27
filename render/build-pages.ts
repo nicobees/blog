@@ -5,6 +5,10 @@ import fs from 'fs-extra';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 import { minimatch } from 'minimatch';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import { NavigationWrapper } from '../src/components/Navigation';
+import Post, { MARKDOWN_CONTENT_PLACEHOLDER } from '../src/components/Post';
 import { customRenderer } from './customRenderer';
 import { escapeHtml, log } from './utils';
 
@@ -54,7 +58,6 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CONTENT_REGISTRY = path.resolve(PROJECT_ROOT, 'content-registry.json');
 const OUTPUT_DIR = path.resolve(PROJECT_ROOT, 'public/pages');
 const INDEX_OUTPUT = path.resolve(PROJECT_ROOT, 'src/data/blog-index.json');
-const STYLES_PATH = path.resolve(PROJECT_ROOT, 'src/styles/blog-post.css');
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 // ============================================================================
@@ -83,7 +86,7 @@ async function generateTailwindCSS(htmlContent: string): Promise<string> {
     fs.writeFileSync(tempFile, htmlContent, 'utf-8');
 
     // Generate CSS using Tailwind CLI
-    const css = execSync(`npx tailwindcss -i ./src/tailwind-input.css -o /dev/stdout --content ${tempFile}`, {
+    const css = execSync(`npx tailwindcss -i ./src/styles/tailwind-input.css -o /dev/stdout --content ${tempFile}`, {
       encoding: 'utf-8',
     });
 
@@ -365,22 +368,23 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
   const sourceDisplay = post.source === 'github' ? ` (${post.sourceRepo})` : ' (local)';
 
   // Render markdown to HTML
-  const renderedContent = await renderMarkdownToHtml(post.content);
+  const markdownContent = await renderMarkdownToHtml(post.content);
 
-  // Format date
-  const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  const PostContent = React.createElement(Post, { post });
 
-  // Read styles
-  const styles = fs.readFileSync(STYLES_PATH, 'utf-8');
+  const navigationWithPostContentHtml = renderToString(
+    React.createElement(NavigationWrapper, { content: PostContent }),
+  );
+  const navigationWithPostContentAndMarkdownHtml = navigationWithPostContentHtml.replace(
+    MARKDOWN_CONTENT_PLACEHOLDER,
+    markdownContent,
+  );
 
-  const htmlWithTailwind = `<!DOCTYPE html>
-<html lang="en">
+  const initialHtml = `<!DOCTYPE html>
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/blog/favicon.svg" priority="low"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${escapeHtml(post.title)} | Blog</title>
     <meta name="description" content="${escapeHtml(post.description)}" />
@@ -390,62 +394,21 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
     <meta property="article:published_time" content="${post.date}" />
     <meta name="author" content="${escapeHtml(post.metadata.author || 'Unknown')}" />
     ${post.metadata.tags ? `<meta name="keywords" content="${escapeHtml(post.metadata.tags.join(', '))}" />` : ''}
-    <style>
-    ${styles}
-    </style>
 </head>
-<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50">
-    <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <article class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-8 sm:p-12">
-            <header class="mb-8">
-                <h1 class="prose-h1">${escapeHtml(post.title)}</h1>
-                <div class="flex flex-col sm:flex-row gap-4 text-gray-600 dark:text-gray-400 text-sm mb-4">
-                    <time datetime="${post.date}">${formattedDate}</time>
-                    ${post.metadata.author ? `<span class="italic">by ${escapeHtml(post.metadata.author)}</span>` : ''}
-                </div>
-                ${post.description ? `<p class="prose-p text-lg text-gray-700 dark:text-gray-300">${escapeHtml(post.description)}</p>` : ''}
-            </header>
-            
-            <div class="prose dark:prose-invert max-w-none space-y-4">
-                ${renderedContent}
-            </div>
-            
-            ${
-              post.metadata.tags && Array.isArray(post.metadata.tags)
-                ? `
-            <footer class="mt-8 pt-8 border-t border-gray-300 dark:border-gray-700">
-                <div class="flex flex-wrap gap-2">
-                    ${post.metadata.tags
-                      .map(
-                        (tag: string) => `
-                        <a href="/blog/tags/${tag}" class="inline-block bg-gray-100 dark:bg-gray-800 text-primary hover:text-white hover:bg-primary dark:hover:bg-primary px-3 py-1 rounded-full text-sm transition-colors">
-                            ${escapeHtml(tag)}
-                        </a>
-                    `,
-                      )
-                      .join('')}
-                </div>
-            </footer>
-            `
-                : ''
-            }
-        </article>
-    </main>
+<body class="min-h-screen bg-(--color-bg) text-(--color-text)">
+  ${navigationWithPostContentAndMarkdownHtml}
 </body>
-                    </html>`;
-
-  // onmouseover="this.style.backgroundColor='#2180a5'; this.style.color='#ffffff';"
-  // onmouseout="this.style.backgroundColor='#f3f4f6'; this.style.color='#2180a5';"
+</html>`;
 
   // Generate Tailwind CSS for this specific HTML
-  const tailwindCSS = await generateTailwindCSS(htmlWithTailwind);
+  const tailwindCSS = await generateTailwindCSS(initialHtml);
 
   // Inject CSS into HTML
-  const finalHtml = htmlWithTailwind.replace('</head>', `<style>${tailwindCSS}</style>\n</head>`);
+  const htmlWithTailwind = initialHtml.replace('</head>', `<style>${tailwindCSS}</style>\n</head>`);
 
   fs.ensureDirSync(OUTPUT_DIR);
   const outputPath = path.join(OUTPUT_DIR, `${post.slug}.html`);
-  fs.writeFileSync(outputPath, finalHtml, 'utf-8');
+  fs.writeFileSync(outputPath, htmlWithTailwind, 'utf-8');
   log(`Generated: ${post.slug}${sourceDisplay}`);
 }
 
