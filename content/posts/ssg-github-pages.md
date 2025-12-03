@@ -76,8 +76,6 @@ There are no API requests to GitHub—everything is already on the page. Search 
 
 And here's the thing: you still get React. The JavaScript bundle still ships, but now it's there for progressive future enhancement—adding interactivity like search filters, comment sections, or dynamic Table of Contents (TOC) generation.
 
----
-
 ## The Technical Foundation
 
 ### Setting Up GitHub Authentication
@@ -103,9 +101,6 @@ The heart of this system is a single Node.js script that runs at build time. It 
 The script first scans both the local directory `content/posts` and any additional GitHub repositories specified in a `content-registry.json` file. It uses the GitHub API to fetch markdown files from other repos.
 
 We use `gray-matter` to parse the frontmatter (metadata) from markdown. This separates the YAML header with title, date, tags from the actual markdown content. Each post becomes a structured object we can work with programmatically.
-
-<details>
-  <summary>Click to see the logic to scan the local markdown files</summary>
 
 ```typescript
 // build-pages.ts
@@ -172,14 +167,10 @@ async function scanLocalMarkdown(sourcePath: string): Promise<BlogPost[]> {
   return posts;
 }
 ```
-</details>
 
 #### Convert markdown into HTML
 
 The convertion from markdown to HTML is done using the `marked` library, with a custom renderer in order to handle the code higlighting (with `highlight.js`).
-
-<details>
-  <summary>Click to see the markdown to HTML conversion logic</summary>
 
 ```typescript
 import { marked } from 'marked';
@@ -215,8 +206,6 @@ async function convertMarkdownToHtml(markdown: string): Promise<ConvertMarkdownR
   }
 }
 ```
-</details>
-
 
 #### Render React components to HTML strings
 
@@ -225,9 +214,6 @@ At this point, we have the html converted for each blog posts. In this step we f
 The initial generated html is also enriched with all the SEO metadata in the `<head>` tags, such as title, description, Open Graph properties for social sharing, publication date, author, and keywords.
 
 And furthermore, we generate Tailwind CSS specifically for this html content, to keep the injected css bundle size as small as possible.
-
-<details>
-  <summary>Click to see the React rendering logic</summary>
 
 ```typescript
 async function generatePostHTML(post: BlogPost): Promise<void> {
@@ -268,7 +254,7 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
     <meta name="author" content="${escapeHtml(post.metadata.author || 'Unknown')}" />
     ${post.metadata.tags ? `<meta name="keywords" content="${escapeHtml(post.metadata.tags.join(', '))}" />` : ''}
 </head>
-<body class="min-h-screen bg-(--color-bg) text-(--color-text)">
+<body class="min-h-screen bg-bg text-text">
   ${navigationWithPostContentAndMarkdownHtml}
 </body>
 </html>`;
@@ -285,7 +271,6 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
   log(`Generated: ${post.slug}${sourceDisplay}`);
 }
 ```
-</details>
 
 ### Homepage: listing posts
 
@@ -297,13 +282,9 @@ Then the homepage is rendered as html string using React server side capabilitie
 
 This time, when the homepage loads in the browser, it will also hydrate and download react and relative necessary javascript bundle. This keeps the homepage ready for interactivity and future enhancements (e.g. search, filters, sorting, etc).
 
-<details>
-  <summary>Click to see the homepage hydration logic</summary>
-
 ```typescript
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import App from './App';
-import './styles/index.css';
 
 const rootElement = document.getElementById('root');
 
@@ -320,7 +301,6 @@ if (rootElement.hasChildNodes()) {
   createRoot(rootElement).render(<App />);
 }
 ```
-</details>
 
 ### Summary of the build and serve process
 
@@ -337,7 +317,10 @@ On a typical blog, this hydration bundle is 50-100KB gzipped, compared to 200-40
 
 ## GitHub Actions: Automating the Build and Deploy
 
-The entire pipeline is orchestrated by a GitHub Actions workflow that runs every time you push to main:
+The entire pipeline is orchestrated by a GitHub Actions workflow that runs every time you push to main.
+
+<details>
+  <summary>Click to see the full GitHub Actions workflow file</summary>
 
 ```yaml
 # .github/workflows/deploy.yml
@@ -392,6 +375,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifact_name: "frontend-gh-pages-artifact"
 ```
+</details>
 
 What's happening here:
 
