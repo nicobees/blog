@@ -404,6 +404,30 @@ What's happening here:
 
 `${{ secrets.GITHUB_TOKEN }}` is automatically available in GitHub Actions. You don't need to create it or manage it, and this allows up to 5000 API requests per hour, which is more than enough for building a personal blog.
 
+## Why This Structure Matters
+
+I chose to use markdown frontmatter for metadata because it keeps the source files simple and self-contained. All the information about a post—its title, date, tags, description, status—lives right at the top of the markdown file. It also makes the markdown files portable; if you ever wanted to move this blog to another system, the metadata is already there.
+
+Pre-rendering HTML at build time creates a fundamental shift in how you think about performance. There's no runtime work on the server or the browser. Everything that can be computed is computed during the build, and the output is just files. This is performant and efficient, for amount of content typical of a personal blog.
+
+The hydration strategy is where you get the best of both worlds. You get instant-loading pre-rendered HTML for SEO and performance, plus React for progressive enhancement. The JavaScript bundle is minimal because it only needs to make the pre-rendered HTML interactive, not render it from scratch.
+
+Cross-repository content fetching is possible because at build time, we have full access to GitHub's API with authentication. We can fetch markdown from multiple repos, aggregate them, and generate a single unified blog. This decouples content authoring from the blog infrastructure.
+
+## Performance in the Real World
+
+The difference in real-world performance is noticeable. First paint on an SSG site typically happens around 300 milliseconds. Time to interactive is under 500 milliseconds. There are zero API requests—everything came down with the initial HTML. The bundle size is smaller because we're not shipping a markdown parser; it's just React for interactivity.
+
+On a Lighthouse audit, SSG blogs routinely score in the 95-100 range. SPAs struggle to get past 80 because of the runtime overhead and JavaScript execution time. Users notice the difference. Pages feel instant.
+
+## Scaling and Maintenance
+
+One thing I love about this approach is how well it scales. If you have 10 posts or 1000 posts, the build process works exactly the same way. The build time increases slightly with more content (maybe 5-10 seconds per 50 posts), but it's still measured in seconds. The deployed site is equally fast regardless of how many articles you've published.
+
+Maintenance is minimal. The blog repository contains your React components and build script. Content lives in markdown files, either in the same repo or in other repos you own. When you write a new post, you create a new markdown file. On your next push, GitHub Actions automatically builds everything and deploys it. There's no manual intervention, no operations overhead, no infrastructure to maintain.
+
+If you ever decide you want to move to a different platform—maybe you want a more sophisticated blog system someday—your markdown files are portable. They're not locked into this approach. You could adapt them to work with Next.js, Hugo, or whatever else you prefer. The markdown is the source of truth.
+
 ## Getting Your First Post Published
 
 To start, you'd create your repository with the Vite scaffolding already set up, add the build script, and create a `content/posts` directory. Your first markdown file goes in there with frontmatter at the top. Running the build locally generates the HTML files, and you can preview them. When you're happy, you push to main and GitHub Actions takes care of the deployment.
