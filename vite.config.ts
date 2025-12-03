@@ -38,18 +38,28 @@ export default defineConfig({
     svgr({
       svgrOptions: { icon: true },
     }),
-    //     {
-    //       name: 'rewrite-css-links',
-    //       transformIndexHtml(html) {
-    //         const newValue = html.replace(
-    //           /<link rel="stylesheet" crossorigin href="(.*?)">/g,
-    //           (_m, href) => `
+    // {
+    //   name: 'rewrite-css-links',
+    //   transformIndexHtml(html) {
+    //     const newValue = html.replace(
+    //       /<link rel="stylesheet" crossorigin href="(.*?)">/g,
+    //       (_m, href) => `
     // <link rel="preload" defer crossorigin href="${href}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     // <noscript><link defer crossorigin rel="stylesheet" href="${href}"></noscript>`,
-    //         );
-    //         return newValue;
-    //       },
-    //     },
+    //     );
+    //     return newValue;
+    //   },
+    // },
+    {
+      name: 'defer-js-links',
+      transformIndexHtml(html) {
+        const newValue = html.replace(
+          /<script type="module" crossorigin src="(.*?)"><\/script>/g,
+          (_m, src) => `<script type="module" defer crossorigin src="${src}"></script>`,
+        );
+        return newValue;
+      },
+    },
   ],
 
   server: {
