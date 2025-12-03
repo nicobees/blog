@@ -10,7 +10,37 @@
   --color-text-secondary: #6b7280;
 }
 
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  h1 {
+    @apply text-4xl;
+  }
+
+  h2 {
+    @apply text-3xl;
+  }
+
+  h3 {
+    @apply text-2xl;
+  }
+
+  p {
+    @apply mb-4 text-text;
+  }
+
+  a:hover {
+    @apply text-primary-hover underline;
+  }
+}
+
 @layer utilities {
+  a {
+    @apply text-primary no-underline transition-colors;
+  }
+
   pre:has(> code.hljs) {
     @apply p-4;
   }

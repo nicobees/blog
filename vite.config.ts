@@ -38,6 +38,18 @@ export default defineConfig({
     svgr({
       svgrOptions: { icon: true },
     }),
+    //     {
+    //       name: 'rewrite-css-links',
+    //       transformIndexHtml(html) {
+    //         const newValue = html.replace(
+    //           /<link rel="stylesheet" crossorigin href="(.*?)">/g,
+    //           (_m, href) => `
+    // <link rel="preload" defer crossorigin href="${href}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    // <noscript><link defer crossorigin rel="stylesheet" href="${href}"></noscript>`,
+    //         );
+    //         return newValue;
+    //       },
+    //     },
   ],
 
   server: {

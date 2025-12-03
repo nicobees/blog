@@ -3,7 +3,7 @@ export default function Footer() {
   const footerMessage = `Built with React, Vite, and `;
 
   return (
-    <footer className="border-t border-(--color-border) bg-(--color-surface) py-8 text-sm text-(--color-text-secondary)">
+    <footer className="border-t border-(--color-border) bg-surface py-8 text-sm text-text-secondary">
       <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
         <p>&copy; {currentYear} My Blog. All rights reserved.</p>
         <p className="mt-1">
