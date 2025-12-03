@@ -97,3 +97,5 @@ GitHub Actions - CI/CD
 ## 🎯 Next Steps
 
 - Configure cross-repo content fetching in content-registry.json
+- Comments and votes functionality (e.g. utterances)
+- Customisation options for themes

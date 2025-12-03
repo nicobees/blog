@@ -3,68 +3,16 @@
 @theme {
   --color-primary: #2180a5;
   --color-primary-hover: #1d6a85;
+
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
 }
 
-/* Custom component classes for blog posts */
-@layer components {
-  .prose-h1 {
-    @apply text-4xl font-bold mb-6 mt-0;
-  }
-
-  .prose-h2 {
-    @apply text-3xl font-bold mb-4 mt-8 border-b-2 border-gray-300 pb-2 dark:border-gray-600;
-  }
-
-  .prose-h3 {
-    @apply text-2xl font-semibold mb-4 mt-6;
-  }
-
-  .prose-p {
-    @apply mb-4 leading-7;
-  }
-
-  .prose-a {
-    @apply text-blue-600 dark:text-blue-400 hover:underline transition-colors;
-  }
-
-  .prose-code {
-    @apply bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-1.5 py-0.5 rounded text-sm font-mono;
-  }
-
-  .prose-pre {
-    @apply bg-gray-100 dark:bg-gray-900 rounded-lg p-6 overflow-x-auto mb-6 border border-gray-300 dark:border-gray-700;
-  }
-
-  .prose-ul {
-    @apply list-disc list-inside ml-4 mb-4 space-y-2;
-  }
-
-  .prose-ol {
-    @apply list-decimal list-inside ml-4 mb-4 space-y-2;
-  }
-
-  .prose-blockquote {
-    @apply border-l-4 border-blue-600 dark:border-blue-400 pl-6 my-6 text-gray-600 dark:text-gray-400 italic;
-  }
-
-  .prose-table {
-    @apply w-full border-collapse mb-6 border border-gray-300 dark:border-gray-700;
-  }
-
-  .prose-th {
-    @apply bg-gray-100 dark:bg-gray-800 px-4 py-2 text-left font-semibold border-b border-gray-300 dark:border-gray-700;
-  }
-
-  .prose-td {
-    @apply px-4 py-2 border-b border-gray-300 dark:border-gray-700;
-  }
-
-  .prose-img {
-    @apply max-w-full h-auto rounded-lg my-6;
-  }
-
-  .prose-del {
-    @apply line-through text-gray-500 dark:text-gray-400;
+@layer utilities {
+  pre:has(> code.hljs) {
+    @apply p-4;
   }
 }
 
@@ -143,9 +91,14 @@
     @apply bg-red-700 text-red-50;
   }
 
+  code.hljs {
+    @apply text-[0.8rem]/[1.5] overflow-x-auto;
+  }
+
   code.hljs.language-yaml,
   code.hljs.language-typescript,
-  code.hljs.language-bash {
-    display: inline-block;
+  code.hljs.language-bash,
+  code.hljs.language-plaintext {
+    @apply inline-block;
   }
 }

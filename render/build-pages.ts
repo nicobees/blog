@@ -7,6 +7,7 @@ import { marked } from 'marked';
 import { minimatch } from 'minimatch';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
+import App from '../src/App';
 import { NavigationWrapper } from '../src/components/Navigation';
 import Post, { MARKDOWN_CONTENT_PLACEHOLDER } from '../src/components/Post';
 import { customRenderer } from './customRenderer';
@@ -61,7 +62,7 @@ interface ContentSource {
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CONTENT_REGISTRY = path.resolve(PROJECT_ROOT, 'content-registry.json');
-const OUTPUT_DIR = path.resolve(PROJECT_ROOT, 'public/pages');
+const OUTPUT_PAGES_DIR = path.resolve(PROJECT_ROOT, 'public/pages');
 const INDEX_OUTPUT = path.resolve(PROJECT_ROOT, 'src/data/blog-index.json');
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
@@ -109,30 +110,6 @@ async function generateTailwindCSS(htmlContent: string): Promise<string> {
   }
 }
 
-// ============================================================================
-// Markdown Rendering
-// ============================================================================
-
-// Configure marked to use highlight.js via the plugin
-// marked.use(
-//   markedHighlight({
-//     highlight(code, lang) {
-//       if (lang && hljs.getLanguage(lang)) {
-//         try {
-//           // Note: In modern highlight.js, the property is .value, not .html
-//           return hljs.highlight(code, { ignoreIllegals: true, language: lang }).value;
-//         } catch (error) {
-//           log(`Error highlighting ${lang}: ${error}`, 'warn');
-//         }
-//       }
-//       // Fallback to no highlighting
-//       return hljs.highlight(code, { language: 'plaintext' }).value;
-//     },
-//     langPrefix: 'hljs language-',
-//   }),
-// );
-
-// Set other options separately
 marked.use({
   breaks: true,
   gfm: true,
@@ -147,13 +124,20 @@ marked.setOptions({
   pedantic: false,
 });
 
-async function renderMarkdownToHtml(markdown: string): Promise<string> {
+type ConvertMarkdownResult = { error: string; html?: never } | { error?: never; html: string };
+
+const isConvertMarkdownResultError = (result: ConvertMarkdownResult): result is { error: string; html?: never } => {
+  return !!result && !!result.error && !result.html;
+};
+
+async function convertMarkdownToHtml(markdown: string): Promise<ConvertMarkdownResult> {
   try {
     const html = await marked.parse(markdown);
-    return html;
+    return { error: undefined, html };
   } catch (error) {
-    log(`Error rendering markdown: ${error}`, 'error');
-    return '<p>Error rendering content</p>';
+    const errorMessage = 'Error converting markdown into HTML';
+    log(`${errorMessage}: ${error}`, 'error');
+    return { error: errorMessage, html: undefined };
   }
 }
 
@@ -229,11 +213,15 @@ async function fetchGitHubFile(owner: string, repo: string, filePath: string, br
 
     return null;
   } catch (error) {
-    if (error.status === 404) {
-      log(`File not found: ${owner}/${repo}/${filePath}`, 'warn');
-    } else {
-      log(`Error fetching ${owner}/${repo}/${filePath}: ${error.message}`, 'error');
-    }
+    const genericErrorMessage = `Error fetching`;
+
+    const filePathSubstring = `${owner}/${repo}/${filePath}`;
+    // TODO: add handling for 404 file not found, check in error.status if available
+    // const isNotFoundSubstring = `File not found`;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessageComputed = `${genericErrorMessage}: ${filePathSubstring} - ${errorMessage}`;
+    log(errorMessageComputed, 'error');
+
     fetchStats.failed++;
     return null;
   }
@@ -270,7 +258,8 @@ async function listGitHubDirectory(
 
     return [];
   } catch (error) {
-    log(`Error listing directory ${owner}/${repo}/${dirPath}: ${error.message}`, 'error');
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log(`Error listing directory ${owner}/${repo}/${dirPath}: ${errorMessage}`, 'error');
     return [];
   }
 }
@@ -378,7 +367,14 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
   const sourceDisplay = post.source === 'github' ? ` (${post.sourceRepo})` : ' (local)';
 
   // Render markdown to HTML
-  const markdownContent = await renderMarkdownToHtml(post.content);
+  const conversionResult = await convertMarkdownToHtml(post.content);
+
+  if (isConvertMarkdownResultError(conversionResult)) {
+    log(`Skipping post generation to markdown render error: ${post.slug}${sourceDisplay}`, 'warn');
+    return;
+  }
+
+  const { html: markdownContent } = conversionResult;
 
   const PostContent = React.createElement(Post, { post });
 
@@ -416,8 +412,8 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
   // Inject CSS into HTML
   const htmlWithTailwind = initialHtml.replace('</head>', `<style>${tailwindCSS}</style>\n</head>`);
 
-  fs.ensureDirSync(OUTPUT_DIR);
-  const outputPath = path.join(OUTPUT_DIR, `${post.slug}.html`);
+  fs.ensureDirSync(OUTPUT_PAGES_DIR);
+  const outputPath = path.join(OUTPUT_PAGES_DIR, `${post.slug}.html`);
   fs.writeFileSync(outputPath, htmlWithTailwind, 'utf-8');
   log(`Generated: ${post.slug}${sourceDisplay}`);
 }
@@ -426,7 +422,7 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
 // Blog Index Generation
 // ============================================================================
 
-async function generateBlogIndex(posts: BlogPost[]): Promise<void> {
+async function generateBlogIndex(posts: BlogPost[]): Promise<BlogIndex> {
   const index: BlogIndex = {
     lastUpdated: new Date().toISOString(),
     posts: posts
@@ -445,6 +441,39 @@ async function generateBlogIndex(posts: BlogPost[]): Promise<void> {
   fs.ensureDirSync(path.dirname(INDEX_OUTPUT));
   fs.writeFileSync(INDEX_OUTPUT, JSON.stringify(index, null, 2), 'utf-8');
   log(`Generated index with ${posts.length} posts`);
+
+  return index;
+}
+
+// ============================================================================
+// Homepage HTML Generation
+// ============================================================================
+
+async function generateHomePageHTML({ title, posts }: { title: string; posts: BlogPost[] }): Promise<void> {
+  const homePageWithPostContentHtml = renderToString(React.createElement(App, { posts }));
+
+  const initialHtml = `<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/blog/favicon.svg" priority="low"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${escapeHtml(title)}</title>
+</head>
+<body class="min-h-screen bg-(--color-bg) text-(--color-text)">
+  <div id="root">${homePageWithPostContentHtml}</div><script type="module" src="/src/main.tsx"></script>
+</body>
+</html>`;
+
+  // Generate Tailwind CSS for this specific HTML
+  const tailwindCSS = await generateTailwindCSS(initialHtml);
+
+  // Inject CSS into HTML
+  const htmlWithTailwind = initialHtml.replace('</head>', `<style>${tailwindCSS}</style>\n</head>`);
+
+  const outputPath = path.join(PROJECT_ROOT, `index.html`);
+  fs.writeFileSync(outputPath, htmlWithTailwind, 'utf-8');
+  log(`Generated: index.html`);
 }
 
 // ============================================================================
@@ -476,7 +505,9 @@ async function build(): Promise<void> {
       await generatePostHTML(post);
     }
 
-    await generateBlogIndex(filteredPosts);
+    const blogIndex = await generateBlogIndex(filteredPosts);
+
+    await generateHomePageHTML({ posts: blogIndex?.posts || [], title: 'Nicobees Blog' });
 
     log(`\n🎉 Build complete!`);
     log(`   Success: ${fetchStats.success}/${fetchStats.total}`, 'success');
@@ -493,4 +524,4 @@ if (process.argv[1] === __filename) {
   build();
 }
 
-export { build };
+export type { build };

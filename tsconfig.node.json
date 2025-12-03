@@ -5,7 +5,10 @@
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true
   },
-  "include": ["vite.config.ts", "src/vite-env.d.ts", "render/*.ts", "src/components/**/*.tsx"]
+  "include": ["vite.config.ts", "src/vite-env.d.ts", "render/*.ts", "src/components/**/*.tsx", "src/App.tsx"]
 }

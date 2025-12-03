@@ -1,12 +1,13 @@
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const footerMessage = `Built with React, Vite, and `;
 
   return (
     <footer className="border-t border-(--color-border) bg-(--color-surface) py-8 text-sm text-(--color-text-secondary)">
       <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
         <p>&copy; {currentYear} My Blog. All rights reserved.</p>
         <p className="mt-1">
-          Built with React, Vite, and{' '}
+          {footerMessage}
           <a
             className="font-medium text-primary hover:underline"
             href="https://pages.github.com/"
