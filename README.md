@@ -55,6 +55,53 @@ npm run build
 npm run preview
 ```
 
+Push to main:
+
+```bash
+git add .
+git commit -m "Add new post"
+git push
+```
+
+GitHub Actions will automatically build and deploy!
+
+Setup GitHub Token (Optional)
+To fetch content from other repositories:
+
+Create a Personal Access Token:
+
+Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+
+Generate new token with public_repo scope
+
+Copy the token
+
+Create .env.local in the project root:
+
+```text
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+Update content-registry.json to add external sources:
+
+```json
+{
+  "sources": [
+    {
+      "type": "local",
+      "path": "content/posts"
+    },
+    {
+      "type": "github",
+      "owner": "your-username",
+      "repo": "another-repo",
+      "path": "posts",
+      "branch": "main",
+      "pattern": "*.md"
+    }
+  ]
+}
+```
+
 ## Build Process
 
 ```bash
@@ -85,6 +132,11 @@ Output is in /dist and ready for deployment.
 └── vite.config.ts         # Vite configuration
 ```
 
+Deployment
+The site is automatically deployed to GitHub Pages when you push to the main branch.
+
+GitHub Pages URL: https://your-username.github.io/blog
+
 ## Tech Stack
 
 React 19
@@ -93,6 +145,54 @@ Vite
 Markdown
 GitHub Pages - Hosting
 GitHub Actions - CI/CD
+
+## License
+
+MIT
+
+Built with ❤️ using React, Vite, and Markdown.
+
+```text
+
+---
+
+## 📋 Quick Setup Instructions
+
+1. **Create GitHub repository**
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/your-username/your-blog.git
+   git push -u origin main
+```
+Configure GitHub Pages
+
+Go to repository Settings → Pages
+
+Select "GitHub Actions" as source
+
+Install dependencies
+
+```bash
+npm install
+```
+Create first post
+
+Copy the markdown article to content/posts/ssg-github-pages.md
+
+Test locally
+
+```bash
+npm run build
+npm run preview
+```
+Deploy
+
+```bash
+git push
+```
 
 ## 🎯 Next Steps
 

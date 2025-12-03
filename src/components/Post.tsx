@@ -48,13 +48,12 @@ export default function Post({ post }: BlogLayoutProps) {
           <footer className="mt-8 pt-8 border-t border-gray-300 dark:border-gray-700">
             <div className="flex flex-wrap gap-2">
               {post.metadata.tags.map((tag: string) => (
-                <a
-                  className="inline-block bg-gray-100 dark:bg-gray-800 text-primary hover:text-white hover:bg-primary dark:hover:bg-primary px-3 py-1 rounded-full text-sm transition-colors"
-                  href={`/blog/tags/${tag}`}
+                <span
+                  className="inline-block bg-gray-100 dark:bg-primary text-primary dark:text-white hover:text-white hover:bg-primary dark:hover:bg-gray-800 px-3 py-1 rounded-full text-sm transition-colors"
                   key={tag}
                 >
                   {tag}
-                </a>
+                </span>
               ))}
             </div>
           </footer>

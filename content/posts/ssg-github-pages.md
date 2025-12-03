@@ -76,8 +76,6 @@ There are no API requests to GitHub—everything is already on the page. Search 
 
 And here's the thing: you still get React. The JavaScript bundle still ships, but now it's there for progressive future enhancement—adding interactivity like search filters, comment sections, or dynamic Table of Contents (TOC) generation.
 
----
-
 ## The Technical Foundation
 
 ### Setting Up GitHub Authentication
@@ -103,9 +101,6 @@ The heart of this system is a single Node.js script that runs at build time. It 
 The script first scans both the local directory `content/posts` and any additional GitHub repositories specified in a `content-registry.json` file. It uses the GitHub API to fetch markdown files from other repos.
 
 We use `gray-matter` to parse the frontmatter (metadata) from markdown. This separates the YAML header with title, date, tags from the actual markdown content. Each post becomes a structured object we can work with programmatically.
-
-<details>
-  <summary>Click to see the logic to scan the local markdown files</summary>
 
 ```typescript
 // build-pages.ts
@@ -172,14 +167,10 @@ async function scanLocalMarkdown(sourcePath: string): Promise<BlogPost[]> {
   return posts;
 }
 ```
-</details>
 
 #### Convert markdown into HTML
 
 The convertion from markdown to HTML is done using the `marked` library, with a custom renderer in order to handle the code higlighting (with `highlight.js`).
-
-<details>
-  <summary>Click to see the markdown to HTML conversion logic</summary>
 
 ```typescript
 import { marked } from 'marked';
@@ -215,8 +206,6 @@ async function convertMarkdownToHtml(markdown: string): Promise<ConvertMarkdownR
   }
 }
 ```
-</details>
-
 
 #### Render React components to HTML strings
 
@@ -225,9 +214,6 @@ At this point, we have the html converted for each blog posts. In this step we f
 The initial generated html is also enriched with all the SEO metadata in the `<head>` tags, such as title, description, Open Graph properties for social sharing, publication date, author, and keywords.
 
 And furthermore, we generate Tailwind CSS specifically for this html content, to keep the injected css bundle size as small as possible.
-
-<details>
-  <summary>Click to see the React rendering logic</summary>
 
 ```typescript
 async function generatePostHTML(post: BlogPost): Promise<void> {
@@ -268,7 +254,7 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
     <meta name="author" content="${escapeHtml(post.metadata.author || 'Unknown')}" />
     ${post.metadata.tags ? `<meta name="keywords" content="${escapeHtml(post.metadata.tags.join(', '))}" />` : ''}
 </head>
-<body class="min-h-screen bg-(--color-bg) text-(--color-text)">
+<body class="min-h-screen bg-bg text-text">
   ${navigationWithPostContentAndMarkdownHtml}
 </body>
 </html>`;
@@ -285,7 +271,6 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
   log(`Generated: ${post.slug}${sourceDisplay}`);
 }
 ```
-</details>
 
 ### Homepage: listing posts
 
@@ -297,13 +282,9 @@ Then the homepage is rendered as html string using React server side capabilitie
 
 This time, when the homepage loads in the browser, it will also hydrate and download react and relative necessary javascript bundle. This keeps the homepage ready for interactivity and future enhancements (e.g. search, filters, sorting, etc).
 
-<details>
-  <summary>Click to see the homepage hydration logic</summary>
-
 ```typescript
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import App from './App';
-import './styles/index.css';
 
 const rootElement = document.getElementById('root');
 
@@ -320,7 +301,6 @@ if (rootElement.hasChildNodes()) {
   createRoot(rootElement).render(<App />);
 }
 ```
-</details>
 
 ### Summary of the build and serve process
 
@@ -337,7 +317,10 @@ On a typical blog, this hydration bundle is 50-100KB gzipped, compared to 200-40
 
 ## GitHub Actions: Automating the Build and Deploy
 
-The entire pipeline is orchestrated by a GitHub Actions workflow that runs every time you push to main:
+The entire pipeline is orchestrated by a GitHub Actions workflow that runs every time you push to main.
+
+<details>
+  <summary>Click to see the full GitHub Actions workflow file</summary>
 
 ```yaml
 # .github/workflows/deploy.yml
@@ -392,6 +375,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifact_name: "frontend-gh-pages-artifact"
 ```
+</details>
 
 What's happening here:
 
@@ -403,6 +387,30 @@ What's happening here:
 6. Upload and deploy: GitHub Actions handles deploying to GitHub Pages
 
 `${{ secrets.GITHUB_TOKEN }}` is automatically available in GitHub Actions. You don't need to create it or manage it, and this allows up to 5000 API requests per hour, which is more than enough for building a personal blog.
+
+## Why This Structure Matters
+
+I chose to use markdown frontmatter for metadata because it keeps the source files simple and self-contained. All the information about a post—its title, date, tags, description, status—lives right at the top of the markdown file. It also makes the markdown files portable; if you ever wanted to move this blog to another system, the metadata is already there.
+
+Pre-rendering HTML at build time creates a fundamental shift in how you think about performance. There's no runtime work on the server or the browser. Everything that can be computed is computed during the build, and the output is just files. This is performant and efficient, for amount of content typical of a personal blog.
+
+The hydration strategy is where you get the best of both worlds. You get instant-loading pre-rendered HTML for SEO and performance, plus React for progressive enhancement. The JavaScript bundle is minimal because it only needs to make the pre-rendered HTML interactive, not render it from scratch.
+
+Cross-repository content fetching is possible because at build time, we have full access to GitHub's API with authentication. We can fetch markdown from multiple repos, aggregate them, and generate a single unified blog. This decouples content authoring from the blog infrastructure.
+
+## Performance in the Real World
+
+The difference in real-world performance is noticeable. First paint on an SSG site typically happens around 300 milliseconds. Time to interactive is under 500 milliseconds. There are zero API requests—everything came down with the initial HTML. The bundle size is smaller because we're not shipping a markdown parser; it's just React for interactivity.
+
+On a Lighthouse audit, SSG blogs routinely score in the 95-100 range. SPAs struggle to get past 80 because of the runtime overhead and JavaScript execution time. Users notice the difference. Pages feel instant.
+
+## Scaling and Maintenance
+
+One thing I love about this approach is how well it scales. If you have 10 posts or 1000 posts, the build process works exactly the same way. The build time increases slightly with more content (maybe 5-10 seconds per 50 posts), but it's still measured in seconds. The deployed site is equally fast regardless of how many articles you've published.
+
+Maintenance is minimal. The blog repository contains your React components and build script. Content lives in markdown files, either in the same repo or in other repos you own. When you write a new post, you create a new markdown file. On your next push, GitHub Actions automatically builds everything and deploys it. There's no manual intervention, no operations overhead, no infrastructure to maintain.
+
+If you ever decide you want to move to a different platform—maybe you want a more sophisticated blog system someday—your markdown files are portable. They're not locked into this approach. You could adapt them to work with Next.js, Hugo, or whatever else you prefer. The markdown is the source of truth.
 
 ## Getting Your First Post Published
 

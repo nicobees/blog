@@ -64,6 +64,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CONTENT_REGISTRY = path.resolve(PROJECT_ROOT, 'content-registry.json');
 const OUTPUT_PAGES_DIR = path.resolve(PROJECT_ROOT, 'public/pages');
 const INDEX_OUTPUT = path.resolve(PROJECT_ROOT, 'src/data/blog-index.json');
+const BASE_PATH = process.env.VITE_BASE_PATH || '/blog';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 // ============================================================================
@@ -401,7 +402,7 @@ async function generatePostHTML(post: BlogPost): Promise<void> {
     <meta name="author" content="${escapeHtml(post.metadata.author || 'Unknown')}" />
     ${post.metadata.tags ? `<meta name="keywords" content="${escapeHtml(post.metadata.tags.join(', '))}" />` : ''}
 </head>
-<body class="min-h-screen bg-(--color-bg) text-(--color-text)">
+<body class="min-h-screen bg-bg text-text">
   ${navigationWithPostContentAndMarkdownHtml}
 </body>
 </html>`;
@@ -449,8 +450,17 @@ async function generateBlogIndex(posts: BlogPost[]): Promise<BlogIndex> {
 // Homepage HTML Generation
 // ============================================================================
 
-async function generateHomePageHTML({ title, posts }: { title: string; posts: BlogPost[] }): Promise<void> {
+async function generateHomePageHTML({
+  description,
+  title,
+  posts,
+}: {
+  description?: string;
+  title: string;
+  posts: BlogPost[];
+}): Promise<void> {
   const homePageWithPostContentHtml = renderToString(React.createElement(App, { posts }));
+  const pagesPath = `${BASE_PATH}/pages`;
 
   const initialHtml = `<!DOCTYPE html>
 <html lang="en" class="h-full">
@@ -458,9 +468,32 @@ async function generateHomePageHTML({ title, posts }: { title: string; posts: Bl
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/blog/favicon.svg" priority="low"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHtml(title)}</title>
+    <title>${escapeHtml(title)}</title>${description ? `<meta name="description" content="${escapeHtml(description)}" />` : ''}
+    <script type="speculationrules">
+      {
+        "prefetch": [{
+          "source": "document",
+          "where": {
+            "and": [
+              { "href_matches": "${pagesPath}/*" },
+              { "not": { "href_matches": "/*.pdf" } }
+            ]
+          },
+          "eagerness": "eager"
+        }],
+        "prerender": [{
+          "source": "document",
+          "where": {
+            "and": [
+              { "href_matches": "${pagesPath}/*" }
+            ]
+          },
+          "eagerness": "eager"
+        }]
+      }
+    </script>
 </head>
-<body class="min-h-screen bg-(--color-bg) text-(--color-text)">
+<body class="min-h-screen bg-bg text-text">
   <div id="root">${homePageWithPostContentHtml}</div><script type="module" src="/src/main.tsx"></script>
 </body>
 </html>`;
@@ -507,7 +540,11 @@ async function build(): Promise<void> {
 
     const blogIndex = await generateBlogIndex(filteredPosts);
 
-    await generateHomePageHTML({ posts: blogIndex?.posts || [], title: 'Nicobees Blog' });
+    await generateHomePageHTML({
+      description: 'Articles about web development, React, TypeScript, and me!',
+      posts: blogIndex?.posts || [],
+      title: 'Nicobees Blog',
+    });
 
     log(`\n🎉 Build complete!`);
     log(`   Success: ${fetchStats.success}/${fetchStats.total}`, 'success');
