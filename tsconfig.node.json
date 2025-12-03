@@ -10,5 +10,12 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true
   },
-  "include": ["vite.config.ts", "src/vite-env.d.ts", "render/*.ts", "src/components/**/*.tsx", "src/App.tsx"]
+  "include": [
+    "vite.config.ts",
+    "src/vite-env.d.ts",
+    "render/*.ts",
+    "src/components/**/*.tsx",
+    "src/App.tsx",
+    "src/data/constants.ts"
+  ]
 }

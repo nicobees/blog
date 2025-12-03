@@ -1,11 +1,14 @@
+import { labels } from '../data/constants';
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const footerMessage = `Built with React, Vite, and `;
+  const copyrightMessage = `© ${currentYear} ${labels.title}. All rights reserved.`;
 
   return (
     <footer className="border-t border-(--color-border) bg-surface py-8 text-sm text-text-secondary">
       <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-        <p>&copy; {currentYear} My Blog. All rights reserved.</p>
+        <p>{copyrightMessage}</p>
         <p className="mt-1">
           {footerMessage}
           <a

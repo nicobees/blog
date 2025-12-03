@@ -1,5 +1,6 @@
 import { NavigationWrapper } from './components/Navigation';
 import blogIndex from './data/blog-index.json';
+import { labels } from './data/constants';
 
 interface BlogIndexType {
   posts: Array<{
@@ -20,13 +21,11 @@ function App({ posts = initialPosts }: { posts?: BlogIndexType['posts'] }) {
   const Content = (
     <main className="flex-1 w-full max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
       <header className="mb-12">
-        <h1 className="text-4xl text-center font-bold mb-4">Nicobees Blog</h1>
-        <h2 className="text-2xl text-text-secondary text-center">
-          Articles about web development, React, TypeScript, and me!
-        </h2>
+        <h1 className="text-4xl text-center font-bold mb-4">{labels.title}</h1>
+        <h2 className="text-2xl text-text-secondary text-center">{labels.description}</h2>
       </header>
 
-      <section className="grid gap-8 md:grid-cols-2">
+      <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {!posts?.length ? (
           <p>{noPostsMessage}</p>
         ) : (
@@ -52,7 +51,7 @@ function App({ posts = initialPosts }: { posts?: BlogIndexType['posts'] }) {
                 className="text-primary hover:text-white bg-(--color-code-bg) hover:bg-primary rounded-full px-3 py-1 text-sm font-medium transition-colors"
                 href={`/blog/pages/${post.slug}.html`}
               >
-                Read More →
+                {`${labels.readMore} →`}
               </a>
             </article>
           ))

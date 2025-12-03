@@ -10,6 +10,7 @@ import { renderToString } from 'react-dom/server';
 import App from '../src/App';
 import { NavigationWrapper } from '../src/components/Navigation';
 import Post, { MARKDOWN_CONTENT_PLACEHOLDER } from '../src/components/Post';
+import { labels } from '../src/data/constants';
 import { customRenderer } from './customRenderer';
 import { escapeHtml, log } from './utils';
 
@@ -541,9 +542,9 @@ async function build(): Promise<void> {
     const blogIndex = await generateBlogIndex(filteredPosts);
 
     await generateHomePageHTML({
-      description: 'Articles about web development, React, TypeScript, and me!',
+      description: labels.description,
       posts: blogIndex?.posts || [],
-      title: 'Nicobees Blog',
+      title: labels.title,
     });
 
     log(`\n🎉 Build complete!`);
